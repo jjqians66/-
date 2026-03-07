@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>爱心追逐游戏 💕</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a0a2e;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 100vh;
+    font-family: 'Arial', sans-serif;
+    overflow: hidden;
+    touch-action: none;
+  }
+  #ui {
+    display: flex; justify-content: space-between; align-items: center;
+    width: 100%; max-width: 360px;
+    padding: 6px 10px;
+    color: #fff; font-size: 14px; font-weight: bold;
+  }
+  #score-display { color: #ff69b4; }
+  #lives-display { color: #ffd700; font-size: 16px; }
+  #level-display { color: #7fffd4; }
+  #game-canvas {
+    border: 2px solid #ff69b4;
+    border-radius: 8px;
+    box-shadow: 0 0 20px #ff69b480;
+    display: block;
+  }
+  #controls {
+    display: grid;
+    grid-template-columns: 50px 50px 50px;
+    grid-template-rows: 50px 50px 50px;
+    gap: 4px;
+    margin-top: 10px;
+  }
+  .ctrl-btn {
+    background: rgba(255,105,180,0.25);
+    border: 2px solid #ff69b4;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.1s;
+  }
+  .ctrl-btn:active { background: rgba(255,105,180,0.6); }
+  #overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #fff; text-align: center;
+    z-index: 10;
+  }
+  #overlay h1 { font-size: 28px; color: #ff69b4; margin-bottom: 10px; }
+  #overlay p { font-size: 14px; color: #ccc; margin: 4px 0; max-width: 280px; }
+  #overlay .big { font-size: 48px; margin: 10px 0; }
+  #start-btn {
+    margin-top: 16px;
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #ff69b4, #ff1493);
+    border: none; border-radius: 25px;
+    color: #fff; font-size: 18px; font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 15px #ff69b480;
+  }
+  #message {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 32px; font-weight: bold;
+    color: #ffd700;
+    text-shadow: 2px 2px 8px #000;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 9;
+    transition: opacity 0.3s;
+  }
+</style>
+</head>
+<body>
+
+<div id="overlay">
+  <div class="big">💕</div>
+  <h1>爱心追逐</h1>
+  <p>男生要逃离女朋友的追赶！</p>
+  <p>🍒 收集爱心得分</p>
+  <p>💍 吃戒指可以反击！</p>
+  <p>👆 滑动或使用方向键控制</p>
+  <button id="start-btn" onclick="startGame()">开始游戏</button>
+</div>
+
+<div id="message"></div>
+
+<div id="ui">
+  <div id="score-display">❤️ 0</div>
+  <div id="lives-display">💛💛💛</div>
+  <div id="level-display">Lv.1</div>
+</div>
+
+<canvas id="game-canvas"></canvas>
+
+<div id="controls">
+  <div></div>
+  <div class="ctrl-btn" id="btn-up" ontouchstart="setDir(0,-1)" onmousedown="setDir(0,-1)">▲</div>
+  <div></div>
+  <div class="ctrl-btn" id="btn-left" ontouchstart="setDir(-1,0)" onmousedown="setDir(-1,0)">◀</div>
+  <div></div>
+  <div class="ctrl-btn" id="btn-right" ontouchstart="setDir(1,0)" onmousedown="setDir(1,0)">▶</div>
+  <div></div>
+  <div class="ctrl-btn" id="btn-down" ontouchstart="setDir(0,1)" onmousedown="setDir(0,1)">▼</div>
+  <div></div>
+</div>
+
+<canvas id="offscreen" style="display:none"></canvas>
+
+<script>
+const CELL = 20;
+const COLS = 17;
+const ROWS = 17;
+const W = COLS * CELL;
+const H = ROWS * CELL;
+
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = W;
+canvas.height = H;
+
+// Scale canvas for device pixel ratio
+const dpr = window.devicePixelRatio || 1;
+canvas.style.width = Math.min(W, window.innerWidth - 20) + 'px';
+canvas.style.height = Math.min(H, window.innerWidth - 20) + 'px';
+
+// Maze: 0=path, 1=wall, 2=dot, 3=power(ring), 4=empty
+const MAZE_TEMPLATE = [
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,2,2,2,2,2,1,2,2,2,1,2,2,2,2,2,1],
+  [1,3,1,1,2,1,1,2,1,2,1,1,2,1,1,3,1],
+  [1,2,1,0,2,2,2,2,2,2,2,2,2,0,1,2,1],
+  [1,2,1,0,2,1,1,2,1,2,1,1,2,0,1,2,1],
+  [1,2,2,2,2,2,0,2,0,2,0,2,2,2,2,2,1],
+  [1,2,1,1,2,1,1,0,1,0,1,1,2,1,1,2,1],
+  [1,2,2,2,2,1,0,0,4,0,0,1,2,2,2,2,1],
+  [1,2,1,1,2,1,0,4,4,4,0,1,2,1,1,2,1],
+  [1,2,2,2,2,1,0,0,0,0,0,1,2,2,2,2,1],
+  [1,2,1,1,2,1,1,0,1,0,1,1,2,1,1,2,1],
+  [1,2,2,2,2,2,0,2,0,2,0,2,2,2,2,2,1],
+  [1,2,1,0,2,1,1,2,1,2,1,1,2,0,1,2,1],
+  [1,3,1,0,2,2,2,2,2,2,2,2,2,0,1,3,1],
+  [1,2,1,1,2,1,1,2,1,2,1,1,2,1,1,2,1],
+  [1,2,2,2,2,2,1,2,2,2,1,2,2,2,2,2,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+];
+
+let maze, dots, score, lives, level, gameState;
+let player, chaser, chasers;
+let animFrame;
+let inputDir = {x:1, y:0};
+let nextDir = {x:1, y:0};
+let powerTimer = 0;
+let frightTimer = 0;
+let levelTimer = 0;
+
+function resetMaze() {
+  maze = MAZE_TEMPLATE.map(r => [...r]);
+  dots = 0;
+  for(let r=0; r<ROWS; r++)
+    for(let c=0; c<COLS; c++)
+      if(maze[r][c] === 2 || maze[r][c] === 3) dots++;
+}
+
+function initGame() {
+  score = 0; lives = 3; level = 1;
+  gameState = 'playing';
+  resetMaze();
+  spawnPlayer();
+  spawnChasers();
+  updateUI();
+}
+
+function spawnPlayer() {
+  player = {
+    x: 8 * CELL + CELL/2,
+    y: 12 * CELL + CELL/2,
+    dx: 0, dy: 0,
+    nextDx: 1, nextDy: 0,
+    speed: 2,
+    mouthAngle: 0, mouthDir: 1,
+    frame: 0
+  };
+  inputDir = {x:1, y:0};
+  nextDir = {x:1, y:0};
+}
+
+function spawnChasers() {
+  const speed = 1.4 + (level-1) * 0.15;
+  chasers = [
+    { x: 8*CELL+CELL/2, y: 8*CELL+CELL/2, dx:1, dy:0, speed, frightened:false, eaten:false, respawnTimer:0, color:'#ff69b4' },
+    { x: 8*CELL+CELL/2, y: 8*CELL+CELL/2, dx:-1, dy:0, speed:speed*0.85, frightened:false, eaten:false, respawnTimer:0, color:'#ff9999' },
+  ];
+}
+
+function canMove(x, y, dx, dy) {
+  const nx = x + dx * player.speed;
+  const ny = y + dy * player.speed;
+  const margin = 4;
+  const col1 = Math.floor((nx - CELL/2 + margin) / CELL);
+  const col2 = Math.floor((nx + CELL/2 - margin) / CELL);
+  const row1 = Math.floor((ny - CELL/2 + margin) / CELL);
+  const row2 = Math.floor((ny + CELL/2 - margin) / CELL);
+  if(col1 < 0 || col2 >= COLS || row1 < 0 || row2 >= ROWS) return false;
+  return maze[row1][col1] !== 1 && maze[row1][col2] !== 1 &&
+         maze[row2][col1] !== 1 && maze[row2][col2] !== 1;
+}
+
+function canMoveAt(x, y, dx, dy, speed) {
+  const nx = x + dx * speed;
+  const ny = y + dy * speed;
+  const margin = 5;
+  const col1 = Math.floor((nx - CELL/2 + margin) / CELL);
+  const col2 = Math.floor((nx + CELL/2 - margin) / CELL);
+  const row1 = Math.floor((ny - CELL/2 + margin) / CELL);
+  const row2 = Math.floor((ny + CELL/2 - margin) / CELL);
+  if(col1 < 0 || col2 >= COLS || row1 < 0 || row2 >= ROWS) return false;
+  return maze[row1][col1] !== 1 && maze[row1][col2] !== 1 &&
+         maze[row2][col1] !== 1 && maze[row2][col2] !== 1;
+}
+
+function isAligned(val) {
+  return Math.abs(val % CELL - CELL/2) < 3;
+}
+
+function updatePlayer() {
+  // Try to apply next direction at grid alignment
+  if (isAligned(player.x) && isAligned(player.y)) {
+    if (canMove(player.x, player.y, nextDir.x, nextDir.y)) {
+      player.dx = nextDir.x;
+      player.dy = nextDir.y;
+    }
+  }
+  if (canMove(player.x, player.y, player.dx, player.dy)) {
+    player.x += player.dx * player.speed;
+    player.y += player.dy * player.speed;
+  }
+
+  // Wrap around
+  if (player.x < 0) player.x = W;
+  if (player.x > W) player.x = 0;
+
+  // Eat dots
+  const col = Math.floor(player.x / CELL);
+  const row = Math.floor(player.y / CELL);
+  if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
+    const cell = maze[row][col];
+    if (cell === 2) {
+      maze[row][col] = 0;
+      score += 10;
+      dots--;
+      playBeep(440, 30);
+    } else if (cell === 3) {
+      maze[row][col] = 0;
+      score += 50;
+      dots--;
+      frightTimer = 300;
+      chasers.forEach(c => { c.frightened = true; c.eaten = false; });
+      playBeep(220, 200);
+      showMessage('💍 反击！');
+    }
+  }
+
+  // Mouth animation
+  player.mouthAngle += 0.15 * player.mouthDir;
+  if (player.mouthAngle > 0.35) player.mouthDir = -1;
+  if (player.mouthAngle < 0.02) player.mouthDir = 1;
+  player.frame++;
+}
+
+function updateChasers() {
+  if (frightTimer > 0) {
+    frightTimer--;
+    if (frightTimer === 0) chasers.forEach(c => { c.frightened = false; c.eaten = false; });
+  }
+
+  for (const ch of chasers) {
+    if (ch.respawnTimer > 0) {
+      ch.respawnTimer--;
+      if (ch.respawnTimer === 0) {
+        ch.x = 8*CELL+CELL/2;
+        ch.y = 8*CELL+CELL/2;
+        ch.frightened = false;
+        ch.eaten = false;
+        ch.dx = 1; ch.dy = 0;
+      }
+      continue;
+    }
+
+    // At grid alignment, choose direction
+    if (isAligned(ch.x) && isAligned(ch.y)) {
+      const col = Math.round((ch.x - CELL/2) / CELL);
+      const row = Math.round((ch.y - CELL/2) / CELL);
+      const dirs = [{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}];
+      const valid = dirs.filter(d =>
+        d.x !== -ch.dx || d.y !== -ch.dy // can't reverse
+      ).filter(d => {
+        const nc = col + d.x, nr = row + d.y;
+        return nc>=0 && nc<COLS && nr>=0 && nr<ROWS && maze[nr][nc] !== 1;
+      });
+
+      if (valid.length > 0) {
+        let chosen;
+        if (ch.frightened) {
+          chosen = valid[Math.floor(Math.random() * valid.length)];
+        } else {
+          // Chase player
+          const tx = player.x, ty = player.y;
+          chosen = valid.reduce((best, d) => {
+            const nx = (col+d.x)*CELL+CELL/2, ny = (row+d.y)*CELL+CELL/2;
+            const dist = (nx-tx)**2 + (ny-ty)**2;
+            const bd = ((col+best.x)*CELL+CELL/2-tx)**2 + ((row+best.y)*CELL+CELL/2-ty)**2;
+            return dist < bd ? d : best;
+          });
+        }
+        ch.dx = chosen.x;
+        ch.dy = chosen.y;
+      }
+    }
+
+    const spd = ch.frightened ? ch.speed * 0.6 : ch.speed;
+    if (canMoveAt(ch.x, ch.y, ch.dx, ch.dy, spd)) {
+      ch.x += ch.dx * spd;
+      ch.y += ch.dy * spd;
+    }
+
+    // Wrap
+    if (ch.x < 0) ch.x = W;
+    if (ch.x > W) ch.x = 0;
+
+    // Collision with player
+    const dist = Math.hypot(ch.x - player.x, ch.y - player.y);
+    if (dist < CELL * 0.75) {
+      if (ch.frightened && !ch.eaten) {
+        ch.eaten = true;
+        ch.frightened = false;
+        ch.respawnTimer = 120;
+        score += 200;
+        showMessage('🎉 +200');
+        playBeep(880, 100);
+      } else if (!ch.eaten) {
+        loseLife();
+      }
+    }
+  }
+}
+
+function loseLife() {
+  lives--;
+  updateUI();
+  playBeep(100, 500);
+  if (lives <= 0) {
+    gameState = 'gameover';
+    showOverlay('gameover');
+  } else {
+    showMessage('💔 加油！');
+    setTimeout(() => {
+      spawnPlayer();
+      chasers.forEach(c => {
+        c.x = 8*CELL+CELL/2;
+        c.y = 8*CELL+CELL/2;
+        c.frightened = false;
+        c.eaten = false;
+        c.respawnTimer = 60;
+      });
+    }, 1000);
+  }
+}
+
+function updateUI() {
+  document.getElementById('score-display').textContent = '❤️ ' + score;
+  document.getElementById('lives-display').textContent = '💛'.repeat(lives);
+  document.getElementById('level-display').textContent = 'Lv.' + level;
+}
+
+// ===== DRAWING =====
+
+function drawMaze() {
+  ctx.fillStyle = '#1a0a2e';
+  ctx.fillRect(0, 0, W, H);
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const x = c * CELL, y = r * CELL;
+      const cell = maze[r][c];
+
+      if (cell === 1) {
+        // Wall with gradient glow
+        ctx.fillStyle = '#2d1b69';
+        ctx.fillRect(x, y, CELL, CELL);
+        ctx.strokeStyle = '#6b35c9';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(x+1, y+1, CELL-2, CELL-2);
+      } else if (cell === 2) {
+        // Heart dot
+        drawHeart(ctx, x + CELL/2, y + CELL/2, 3, '#ff69b4');
+      } else if (cell === 3) {
+        // Ring power-up
+        const t = Date.now() / 300;
+        const pulse = 1 + 0.2 * Math.sin(t);
+        ctx.save();
+        ctx.translate(x + CELL/2, y + CELL/2);
+        ctx.scale(pulse, pulse);
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, 5, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.fillStyle = '#fff9';
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+  }
+}
+
+function drawHeart(ctx, x, y, size, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, size*0.3);
+  ctx.bezierCurveTo(-size*0.6, -size*0.3, -size, size*0.1, 0, size);
+  ctx.bezierCurveTo(size, size*0.1, size*0.6, -size*0.3, 0, size*0.3);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawPlayer() {
+  const x = player.x, y = player.y;
+  const r = CELL/2 - 1;
+  ctx.save();
+  ctx.translate(x, y);
+
+  // Rotate based on direction
+  if (player.dx === 1) ctx.rotate(0);
+  else if (player.dx === -1) ctx.rotate(Math.PI);
+  else if (player.dy === 1) ctx.rotate(Math.PI/2);
+  else if (player.dy === -1) ctx.rotate(-Math.PI/2);
+
+  // Body (face)
+  ctx.fillStyle = '#ffe0b2';
+  ctx.beginPath();
+  ctx.arc(0, 0, r, player.mouthAngle * Math.PI, (2 - player.mouthAngle) * Math.PI);
+  ctx.lineTo(0, 0);
+  ctx.fill();
+
+  ctx.restore();
+
+  // Draw cartoon face on top
+  ctx.save();
+  ctx.translate(x, y);
+
+  // Spiky hair (guy)
+  ctx.fillStyle = '#1a1a1a';
+  for (let i = -2; i <= 2; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i*3.5 - 2, -r+2);
+    ctx.lineTo(i*3.5, -r-5 + Math.abs(i)*1.5);
+    ctx.lineTo(i*3.5 + 2, -r+2);
+    ctx.fill();
+  }
+
+  // Glasses (orange tint)
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 1;
+  ctx.fillStyle = 'rgba(255,160,50,0.3)';
+  ctx.beginPath();
+  ctx.arc(-3.5, 0, 3.5, 0, Math.PI*2);
+  ctx.fill(); ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(3.5, 0, 3.5, 0, Math.PI*2);
+  ctx.fill(); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-7, 0); ctx.lineTo(-8, -1);
+  ctx.moveTo(7, 0); ctx.lineTo(8, -1);
+  ctx.moveTo(0, 0); ctx.lineTo(0, -0.5);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawChaser(ch) {
+  if (ch.respawnTimer > 0) return;
+  const x = ch.x, y = ch.y;
+  const r = CELL/2 - 1;
+  ctx.save();
+  ctx.translate(x, y);
+
+  if (ch.frightened) {
+    // Frightened - blue/shaking
+    const shake = Math.sin(Date.now()/50) * 1;
+    ctx.translate(shake, 0);
+    // Body
+    ctx.fillStyle = '#4444ff';
+    ctx.beginPath();
+    ctx.arc(0, -2, r, Math.PI, 0);
+    ctx.lineTo(r, r-2);
+    for (let i = 3; i >= 0; i--) {
+      ctx.lineTo(r - i*(r*2/3) - r/3, r-4 + (i%2)*4);
+    }
+    ctx.lineTo(-r, r-2);
+    ctx.fill();
+    // Scared face
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(-5, -2, 4, 3);
+    ctx.fillRect(1, -2, 4, 3);
+    // Wavy mouth
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-5, 4);
+    for (let i = 0; i <= 4; i++) {
+      ctx.lineTo(-5 + i*2.5, 4 + (i%2)*2);
+    }
+    ctx.stroke();
+  } else {
+    // Normal - girl character
+    // Body/ghost shape
+    ctx.fillStyle = ch.color;
+    ctx.beginPath();
+    ctx.arc(0, -2, r, Math.PI, 0);
+    ctx.lineTo(r, r-2);
+    for (let i = 3; i >= 0; i--) {
+      ctx.lineTo(r - i*(r*2/3) - r/3, r-4 + (i%2)*3);
+    }
+    ctx.lineTo(-r, r-2);
+    ctx.fill();
+
+    // Face skin tone
+    ctx.fillStyle = '#ffe0c8';
+    ctx.beginPath();
+    ctx.arc(0, -3, r*0.7, 0, Math.PI*2);
+    ctx.fill();
+
+    // US Open cap
+    ctx.fillStyle = '#f5f5f5';
+    ctx.beginPath();
+    ctx.arc(0, -r*0.3, r*0.75, Math.PI*1.1, Math.PI*0.1, false);
+    ctx.fill();
+    // Cap brim
+    ctx.fillStyle = '#e8e8e8';
+    ctx.beginPath();
+    ctx.ellipse(0, -r*0.3 + 1, r*0.85, 3, 0, Math.PI*0.9, Math.PI*0.1, true);
+    ctx.fill();
+    // Cap text (tiny)
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 3px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('US', -2.5, -r*0.35);
+    ctx.font = '2.5px Arial';
+    ctx.fillText('OPEN', 0, -r*0.1);
+
+    // Thin glasses
+    ctx.strokeStyle = '#aaa';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.arc(-3, -2, 2.8, 0, Math.PI*2); ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(3, -2, 2.8, 0, Math.PI*2); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-6.5, -2); ctx.lineTo(-7, -1.5);
+    ctx.moveTo(6.5, -2); ctx.lineTo(7, -1.5);
+    ctx.moveTo(-0.2, -2); ctx.lineTo(0.2, -2);
+    ctx.stroke();
+
+    // Smile
+    ctx.strokeStyle = '#c26060';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(0, 0, 3, 0.2, Math.PI*0.8);
+    ctx.stroke();
+
+    // Peace sign hand (tiny)
+    if (Math.floor(Date.now()/500) % 2 === 0) {
+      ctx.fillStyle = '#ffe0c8';
+      ctx.font = '8px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('✌️', r+2, 2);
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawPowerOverlay() {
+  if (frightTimer > 0 && frightTimer < 80) {
+    // Flash warning
+    if (Math.floor(Date.now()/150) % 2 === 0) {
+      ctx.fillStyle = 'rgba(255,255,0,0.05)';
+      ctx.fillRect(0, 0, W, H);
+    }
+  }
+}
+
+function gameLoop() {
+  if (gameState !== 'playing') return;
+
+  updatePlayer();
+  updateChasers();
+
+  drawMaze();
+  drawPlayer();
+  chasers.forEach(drawChaser);
+  drawPowerOverlay();
+  updateUI();
+
+  // Level complete
+  if (dots <= 0) {
+    level++;
+    resetMaze();
+    spawnPlayer();
+    spawnChasers();
+    showMessage('🎊 Level ' + level + '!');
+    playBeep(660, 300);
+    updateUI();
+  }
+
+  animFrame = requestAnimationFrame(gameLoop);
+}
+
+// ===== CONTROLS =====
+function setDir(dx, dy) {
+  nextDir = {x: dx, y: dy};
+  player.nextDx = dx;
+  player.nextDy = dy;
+}
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (gameState !== 'playing') return;
+  const map = {
+    ArrowLeft: [-1,0], ArrowRight: [1,0],
+    ArrowUp: [0,-1], ArrowDown: [0,1],
+    a: [-1,0], d: [1,0], w: [0,-1], s: [0,1]
+  };
+  const d = map[e.key];
+  if (d) { setDir(d[0], d[1]); e.preventDefault(); }
+});
+
+// Touch swipe
+let touchStartX = 0, touchStartY = 0;
+canvas.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  e.preventDefault();
+}, {passive: false});
+
+canvas.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    setDir(dx > 0 ? 1 : -1, 0);
+  } else {
+    setDir(0, dy > 0 ? 1 : -1);
+  }
+  e.preventDefault();
+}, {passive: false});
+
+// ===== AUDIO =====
+let audioCtx;
+function playBeep(freq, dur) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur/1000);
+    osc.start(); osc.stop(audioCtx.currentTime + dur/1000);
+  } catch(e) {}
+}
+
+// ===== MESSAGES =====
+let msgTimeout;
+function showMessage(text) {
+  const el = document.getElementById('message');
+  el.textContent = text;
+  el.style.opacity = '1';
+  clearTimeout(msgTimeout);
+  msgTimeout = setTimeout(() => { el.style.opacity = '0'; }, 1500);
+}
+
+// ===== OVERLAY =====
+function showOverlay(type) {
+  cancelAnimationFrame(animFrame);
+  const ov = document.getElementById('overlay');
+  ov.style.display = 'flex';
+  ov.innerHTML = type === 'gameover' ? `
+    <div class="big">💔</div>
+    <h1>游戏结束！</h1>
+    <p>被追上了～</p>
+    <p style="font-size:24px;color:#ffd700;margin:10px 0">得分: ${score}</p>
+    <button class="start-btn" id="start-btn" style="margin-top:16px;padding:12px 32px;background:linear-gradient(135deg,#ff69b4,#ff1493);border:none;border-radius:25px;color:#fff;font-size:18px;font-weight:bold;cursor:pointer;" onclick="startGame()">再来一次</button>
+  ` : `
+    <div class="big">💕</div>
+    <h1>爱心追逐</h1>
+    <p>男生要逃离女朋友的追赶！</p>
+    <p>🍒 收集爱心得分</p>
+    <p>💍 吃戒指可以反击！</p>
+    <p>👆 滑动或使用方向键控制</p>
+    <button id="start-btn" onclick="startGame()">开始游戏</button>
+  `;
+}
+
+function startGame() {
+  document.getElementById('overlay').style.display = 'none';
+  if (audioCtx) audioCtx.resume();
+  initGame();
+  animFrame = requestAnimationFrame(gameLoop);
+}
+
+// Initial draw
+drawMaze();
+</script>
+</body>
+</html>
