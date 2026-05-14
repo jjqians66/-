@@ -1,731 +1,1257 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>爱心追逐游戏 💕</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>西安旅行计划 · 爸妈专属版</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --terra: #c0622a;
+    --terra-light: #e8845a;
+    --terra-dark: #8b3e18;
+    --gold: #c9942a;
+    --gold-light: #f0c040;
+    --cream: #fdf6ed;
+    --cream-dark: #f5e8d0;
+    --ink: #2c1f0e;
+    --ink-light: #5a4230;
+    --muted: #8a7060;
+    --green: #4a7c59;
+    --blue: #2e5f8a;
+    --card-shadow: 0 2px 16px rgba(44,31,14,0.1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    background: #1a0a2e;
+    font-family: -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    line-height: 1.7;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(160deg, var(--terra-dark) 0%, var(--terra) 50%, var(--gold) 100%);
+    color: #fff;
+    padding: 64px 24px 80px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 10 L65 40 L95 40 L72 58 L80 88 L60 70 L40 88 L48 58 L25 40 L55 40Z' fill='none' stroke='rgba(255,255,255,0.06)' stroke-width='1'/%3E%3C/svg%3E") repeat;
+    pointer-events: none;
+  }
+  .hero-label {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 6vw, 52px);
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  .hero-sub {
+    font-size: clamp(14px, 2.5vw, 18px);
+    opacity: 0.88;
+    margin-bottom: 36px;
+  }
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .hero-stat {
+    text-align: center;
+  }
+  .hero-stat .num {
+    font-size: 28px;
+    font-weight: 700;
+    display: block;
+    line-height: 1.2;
+  }
+  .hero-stat .label {
+    font-size: 12px;
+    opacity: 0.8;
+    letter-spacing: 1px;
+  }
+  .hero-wave {
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 40px;
+  }
+  .hero-wave path { fill: var(--cream); }
+
+  /* ── CONTAINER ── */
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 48px 0 24px;
+  }
+  .section-title .icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--terra), var(--gold));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(192,98,42,0.35);
+  }
+  .section-title h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--terra-dark);
+  }
+  .section-title p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* ── OVERVIEW CARDS ── */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 8px;
+  }
+  .ov-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: var(--card-shadow);
+    border-left: 4px solid var(--terra-light);
+  }
+  .ov-card .ov-icon { font-size: 22px; margin-bottom: 6px; }
+  .ov-card .ov-title { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: 0.5px; }
+  .ov-card .ov-val { font-size: 16px; font-weight: 700; color: var(--ink); margin-top: 2px; }
+  .ov-card .ov-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* ── ALERT BOX ── */
+  .alert {
+    background: #fff8ed;
+    border: 1.5px solid var(--gold);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .alert .alert-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .alert .alert-body { font-size: 14px; color: var(--ink-light); }
+  .alert .alert-body strong { color: var(--terra-dark); }
+
+  /* ── TIMELINE ── */
+  .timeline { position: relative; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 28px; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--terra-light), var(--gold-light), var(--terra-light));
+    opacity: 0.35;
+  }
+
+  .day-block {
+    position: relative;
+    margin-bottom: 28px;
+    padding-left: 70px;
+  }
+  .day-badge {
+    position: absolute;
+    left: 0; top: 0;
+    width: 56px; height: 56px;
+    border-radius: 50%;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    min-height: 100vh;
-    font-family: 'Arial', sans-serif;
+    font-weight: 700;
+    box-shadow: 0 3px 12px rgba(192,98,42,0.3);
+    z-index: 2;
+  }
+  .day-badge .day-num { font-size: 16px; line-height: 1; }
+  .day-badge .day-label { font-size: 9px; letter-spacing: 0.5px; opacity: 0.85; margin-top: 1px; }
+
+  .badge-prep   { background: linear-gradient(135deg, #7a9e7e, #4a7c59); color: #fff; }
+  .badge-travel { background: linear-gradient(135deg, var(--blue), #1a3d5a); color: #fff; }
+  .badge-city   { background: linear-gradient(135deg, var(--terra-light), var(--terra)); color: #fff; }
+  .badge-key    { background: linear-gradient(135deg, var(--gold), var(--terra)); color: #fff; }
+  .badge-museum { background: linear-gradient(135deg, #7b5ea7, #5a3d7a); color: #fff; }
+  .badge-easy   { background: linear-gradient(135deg, var(--green), #2e5a3e); color: #fff; }
+  .badge-return { background: linear-gradient(135deg, #888, #555); color: #fff; }
+
+  .day-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
     overflow: hidden;
-    touch-action: none;
   }
-  #ui {
-    display: flex; justify-content: space-between; align-items: center;
-    width: 100%; max-width: 360px;
-    padding: 6px 10px;
-    color: #fff; font-size: 14px; font-weight: bold;
+  .day-header {
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--cream-dark);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
   }
-  #score-display { color: #ff69b4; }
-  #lives-display { color: #ffd700; font-size: 16px; }
-  #level-display { color: #7fffd4; }
-  #game-canvas {
-    border: 2px solid #ff69b4;
-    border-radius: 8px;
-    box-shadow: 0 0 20px #ff69b480;
-    display: block;
+  .day-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
   }
-  #controls {
+  .day-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .day-tag {
+    flex-shrink: 0;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tag-rest   { background: #e8f5ea; color: #2e6e3e; }
+  .tag-travel { background: #e8f0fa; color: #1a4080; }
+  .tag-light  { background: #fef3e2; color: #8a5a10; }
+  .tag-core   { background: #fde8e0; color: #a03020; }
+  .tag-culture{ background: #f0ebfa; color: #5a3580; }
+  .tag-easy   { background: #e4f5ec; color: #1e6040; }
+  .tag-go     { background: #ebebeb; color: #444; }
+
+  .day-body { padding: 18px 22px; }
+
+  /* ── SEGMENT (time slot within a day) ── */
+  .segments { display: flex; flex-direction: column; gap: 14px; }
+  .segment {
     display: grid;
-    grid-template-columns: 50px 50px 50px;
-    grid-template-rows: 50px 50px 50px;
-    gap: 4px;
+    grid-template-columns: 58px 1fr;
+    gap: 0 14px;
+  }
+  .seg-time {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding-top: 2px;
+    text-align: right;
+  }
+  .seg-content {}
+  .seg-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 3px;
+  }
+  .seg-desc {
+    font-size: 13px;
+    color: var(--ink-light);
+    line-height: 1.6;
+  }
+  .seg-tips { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+  .seg-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .seg-tip .tip-dot {
+    width: 5px; height: 5px;
+    background: var(--terra-light);
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  /* ── HIGHLIGHT PILL ── */
+  .highlights {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
     margin-top: 10px;
   }
-  .ctrl-btn {
-    background: rgba(255,105,180,0.25);
-    border: 2px solid #ff69b4;
+  .hl {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid;
+  }
+  .hl-terra { background: #fdeee8; border-color: #e8a080; color: var(--terra-dark); }
+  .hl-gold  { background: #fdf6e0; border-color: #e8c060; color: #7a5010; }
+  .hl-blue  { background: #e8f0fa; border-color: #90b8e0; color: #1a4070; }
+  .hl-green { background: #e8f5ea; border-color: #80c090; color: #1e5030; }
+
+  /* ── DIVIDER ── */
+  .seg-divider {
+    grid-column: 1 / -1;
+    height: 1px;
+    background: var(--cream-dark);
+    margin: 2px 0;
+  }
+
+  /* ── OPTION BOX ── */
+  .option-box {
+    background: var(--cream);
+    border: 1px solid var(--cream-dark);
     border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 10px;
+  }
+  .option-box .opt-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .opt-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .opt-item {
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px 12px;
+    border: 1.5px solid var(--cream-dark);
+    font-size: 13px;
+  }
+  .opt-item.recommended { border-color: var(--terra-light); }
+  .opt-item .opt-name { font-weight: 600; color: var(--ink); }
+  .opt-item .opt-pro { color: var(--green); font-size: 12px; margin-top: 2px; }
+  .opt-item .opt-con { color: var(--muted); font-size: 12px; }
+  .opt-item .opt-badge {
+    display: inline-block;
+    background: var(--terra-light);
     color: #fff;
-    font-size: 22px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    transition: background 0.1s;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 4px;
+    font-weight: 600;
   }
-  .ctrl-btn:active { background: rgba(255,105,180,0.6); }
-  #overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.85);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    color: #fff; text-align: center;
-    z-index: 10;
+
+  /* ── TRAIN TICKET ── */
+  .train-ticket {
+    background: linear-gradient(135deg, #1a3d5a, #0f2a40);
+    color: #fff;
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin: 14px 0;
+    position: relative;
+    overflow: hidden;
   }
-  #overlay h1 { font-size: 28px; color: #ff69b4; margin-bottom: 10px; }
-  #overlay p { font-size: 14px; color: #ccc; margin: 4px 0; max-width: 280px; }
-  #overlay .big { font-size: 48px; margin: 10px 0; }
-  #start-btn {
+  .train-ticket::before {
+    content: '';
+    position: absolute;
+    right: -20px; top: 50%;
+    transform: translateY(-50%);
+    width: 80px; height: 80px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .ticket-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .ticket-station { text-align: center; flex: 1; }
+  .ticket-station .stn-time { font-size: 26px; font-weight: 700; line-height: 1; }
+  .ticket-station .stn-name { font-size: 12px; opacity: 0.7; margin-top: 3px; }
+  .ticket-mid {
+    flex: 1.2;
+    text-align: center;
+    position: relative;
+  }
+  .ticket-mid .mid-dur { font-size: 11px; opacity: 0.65; margin-bottom: 4px; }
+  .ticket-mid .mid-line {
+    height: 1px;
+    background: rgba(255,255,255,0.25);
+    position: relative;
+  }
+  .ticket-mid .mid-line::after {
+    content: '▶';
+    position: absolute;
+    right: -4px; top: -8px;
+    font-size: 12px;
+    opacity: 0.5;
+  }
+  .ticket-mid .mid-train { font-size: 12px; font-weight: 700; margin-top: 4px; color: var(--gold-light); }
+  .ticket-prices {
     margin-top: 16px;
-    padding: 12px 32px;
-    background: linear-gradient(135deg, #ff69b4, #ff1493);
-    border: none; border-radius: 25px;
-    color: #fff; font-size: 18px; font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 4px 15px #ff69b480;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
   }
-  #message {
-    position: fixed; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 32px; font-weight: bold;
-    color: #ffd700;
-    text-shadow: 2px 2px 8px #000;
-    pointer-events: none;
-    opacity: 0;
-    z-index: 9;
-    transition: opacity 0.3s;
+  .ticket-price-item {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .ticket-price-item .price-class { opacity: 0.7; }
+  .ticket-price-item .price-val { font-weight: 700; color: var(--gold-light); }
+  .ticket-note { font-size: 11px; opacity: 0.55; margin-top: 8px; }
+
+  /* ── HOTEL SECTION ── */
+  .hotel-tier { margin-bottom: 28px; }
+  .tier-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .tier-label .tier-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .tier1 .tier-num { background: linear-gradient(135deg, var(--gold), #b8720a); }
+  .tier2 .tier-num { background: linear-gradient(135deg, var(--terra-light), var(--terra)); }
+  .tier3 .tier-num { background: linear-gradient(135deg, var(--green), #2e5a3e); }
+  .tier-label .tier-name { font-weight: 700; font-size: 15px; color: var(--ink); }
+  .tier-label .tier-sub { font-size: 12px; color: var(--muted); }
+  .hotel-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .hotel-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: var(--card-shadow);
+    border-top: 3px solid var(--cream-dark);
+  }
+  .hotel-card.top { border-top-color: var(--gold); }
+  .hotel-card.mid { border-top-color: var(--terra-light); }
+  .hotel-card.exp { border-top-color: var(--green); }
+  .hotel-name { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+  .hotel-pros { margin-bottom: 6px; }
+  .hotel-pros .hp { display: flex; align-items: flex-start; gap: 6px; font-size: 13px; color: var(--ink-light); margin-bottom: 3px; }
+  .hotel-pros .hp::before { content: '+'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+  .hotel-cons .hc { display: flex; align-items: flex-start; gap: 6px; font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+  .hotel-cons .hc::before { content: '—'; flex-shrink: 0; }
+
+  /* ── TIPS SECTION ── */
+  .tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+  }
+  .tip-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: var(--card-shadow);
+  }
+  .tip-card .tip-icon { font-size: 24px; margin-bottom: 8px; }
+  .tip-card h4 { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+  .tip-card p { font-size: 13px; color: var(--ink-light); line-height: 1.6; }
+
+  /* ── FOOD SECTION ── */
+  .food-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  .food-item {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: var(--card-shadow);
+  }
+  .food-item .food-emoji { font-size: 28px; margin-bottom: 6px; }
+  .food-item .food-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .food-item .food-tip { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* ── SUMMARY CARD ── */
+  .summary-card {
+    background: linear-gradient(135deg, var(--terra-dark), var(--terra));
+    color: #fff;
+    border-radius: 18px;
+    padding: 28px 28px;
+    margin-top: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .summary-card::before {
+    content: '关中平野尽，古都秋色浓';
+    position: absolute;
+    right: 24px; bottom: 20px;
+    font-size: 13px;
+    opacity: 0.2;
+    font-style: italic;
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+  .summary-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+  .summary-points { display: flex; flex-direction: column; gap: 10px; }
+  .sp {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+  }
+  .sp .sp-num {
+    width: 24px; height: 24px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .sp .sp-text { opacity: 0.92; line-height: 1.5; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .hero { padding: 48px 20px 64px; }
+    .hero-stats { gap: 20px; }
+    .hero-stat .num { font-size: 22px; }
+    .timeline::before { left: 22px; }
+    .day-block { padding-left: 56px; }
+    .day-badge { width: 44px; height: 44px; }
+    .day-badge .day-num { font-size: 13px; }
+    .day-header { flex-direction: column; gap: 6px; }
+    .segment { grid-template-columns: 50px 1fr; gap: 0 10px; }
+    .opt-row { grid-template-columns: 1fr; }
+    .ticket-row { flex-direction: column; gap: 12px; }
+    .ticket-mid .mid-line::after { display: none; }
   }
 </style>
 </head>
 <body>
 
-<div id="overlay">
-  <div class="big">💕</div>
-  <h1>爱心追逐</h1>
-  <p>男生要逃离女朋友的追赶！</p>
-  <p>🍒 收集爱心得分</p>
-  <p>💍 吃戒指可以反击！</p>
-  <p>👆 滑动或使用方向键控制</p>
-  <button id="start-btn" onclick="startGame()">开始游戏</button>
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">爸妈专属 · 少折腾版</div>
+  <h1>西安深度旅行</h1>
+  <p class="hero-sub">千年古都，慢慢走 · 上海出发 · 6天5晚</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="num">6</span>
+      <span class="label">天</span>
+    </div>
+    <div class="hero-stat">
+      <span class="num">5</span>
+      <span class="label">晚住宿</span>
+    </div>
+    <div class="hero-stat">
+      <span class="num">3</span>
+      <span class="label">人出行</span>
+    </div>
+    <div class="hero-stat">
+      <span class="num">G360</span>
+      <span class="label">高铁直达</span>
+    </div>
+  </div>
+  <svg class="hero-wave" viewBox="0 0 1440 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,20 C240,40 480,0 720,20 C960,40 1200,0 1440,20 L1440,40 L0,40Z"/>
+  </svg>
 </div>
 
-<div id="message"></div>
+<div class="container">
+
+  <!-- OVERVIEW -->
+  <div class="section-title">
+    <div class="icon">📋</div>
+    <div>
+      <h2>行程概览</h2>
+      <p>最适合带爸妈的节奏安排</p>
+    </div>
+  </div>
+
+  <div class="overview-grid">
+    <div class="ov-card">
+      <div class="ov-icon">🛤️</div>
+      <div class="ov-title">出发路线</div>
+      <div class="ov-val">虹桥 → 西安北</div>
+      <div class="ov-sub">G360 · 5小时39分</div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-icon">🏨</div>
+      <div class="ov-title">落脚区域</div>
+      <div class="ov-val">钟楼 / 南门附近</div>
+      <div class="ov-sub">吃饭方便，打车方便</div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-icon">🎯</div>
+      <div class="ov-title">核心景点</div>
+      <div class="ov-val">兵马俑 · 华清宫</div>
+      <div class="ov-sub">包车 + 讲解，不折腾</div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-icon">🌿</div>
+      <div class="ov-title">行程原则</div>
+      <div class="ov-val">中午留回酒店</div>
+      <div class="ov-sub">每天只安排一顿小吃</div>
+    </div>
+  </div>
+
+  <div class="alert">
+    <div class="alert-icon">⚠️</div>
+    <div class="alert-body">
+      <strong>重要提示：</strong>如果你是国际航班当天落地上海，不要赶 08:55 的 G360！
+      入境 + 取行李 + 浦东→虹桥来不及，尤其带爸妈。
+      建议在上海住一晚，次日早上从容出发。
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="section-title">
+    <div class="icon">📅</div>
+    <div>
+      <h2>每日行程</h2>
+      <p>Day 0–6，节奏舒适不赶路</p>
+    </div>
+  </div>
+
+  <div class="timeline">
+
+    <!-- DAY 0 -->
+    <div class="day-block">
+      <div class="day-badge badge-prep">
+        <div class="day-num">Day0</div>
+        <div class="day-label">准备</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-title">抵达上海 · 住虹桥</div>
+            <div class="day-subtitle">国际航班落地，早点休息</div>
+          </div>
+          <div class="day-tag tag-rest">轻松</div>
+        </div>
+        <div class="day-body">
+          <div class="segments">
+            <div class="segment">
+              <div class="seg-time">落地后</div>
+              <div class="seg-content">
+                <div class="seg-title">入住虹桥附近酒店</div>
+                <div class="seg-desc">推荐住 <strong>虹桥天地</strong> 或虹桥火车站附近，次日步行/打车5分钟即到虹桥站，省去晨间赶路的压力。</div>
+                <div class="seg-tips">
+                  <div class="seg-tip"><div class="tip-dot"></div>不要贪图便宜住浦东——次日赶高铁风险极大</div>
+                  <div class="seg-tip"><div class="tip-dot"></div>简单吃晚饭，早点睡</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 1 -->
+    <div class="day-block">
+      <div class="day-badge badge-travel">
+        <div class="day-num">Day1</div>
+        <div class="day-label">出发</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-title">上海虹桥 → 西安北</div>
+            <div class="day-subtitle">坐高铁，到西安安顿休息</div>
+          </div>
+          <div class="day-tag tag-travel">出行日</div>
+        </div>
+        <div class="day-body">
+          <div class="train-ticket">
+            <div class="ticket-row">
+              <div class="ticket-station">
+                <div class="stn-time">08:55</div>
+                <div class="stn-name">上海虹桥</div>
+              </div>
+              <div class="ticket-mid">
+                <div class="mid-dur">5小时39分</div>
+                <div class="mid-line"></div>
+                <div class="mid-train">G360</div>
+              </div>
+              <div class="ticket-station">
+                <div class="stn-time">14:34</div>
+                <div class="stn-name">西安北</div>
+              </div>
+            </div>
+            <div class="ticket-prices">
+              <div class="ticket-price-item">
+                <div class="price-class">二等座</div>
+                <div class="price-val">¥725</div>
+              </div>
+              <div class="ticket-price-item">
+                <div class="price-class">一等座 推荐</div>
+                <div class="price-val">¥1,160.5</div>
+              </div>
+              <div class="ticket-price-item">
+                <div class="price-class">商务座</div>
+                <div class="price-val">¥2,405.5</div>
+              </div>
+            </div>
+            <div class="ticket-note">* 以 12306 实际放票为准。5小时39分一等座已很舒服，商务座当然更好。</div>
+          </div>
+
+          <div class="segments" style="margin-top:14px">
+            <div class="segment">
+              <div class="seg-time">14:34后</div>
+              <div class="seg-content">
+                <div class="seg-title">到西安北站 → 专车直接去酒店</div>
+                <div class="seg-desc">不要拖行李坐地铁。三个人直接约商务车/专车，20分钟到钟楼/南门区域酒店，舒服到家。</div>
+              </div>
+            </div>
+            <div class="segment">
+              <div class="seg-time">晚上</div>
+              <div class="seg-content">
+                <div class="seg-title">附近随便吃一顿，早早休息</div>
+                <div class="seg-desc">今天不安排景点。旅途一天人会累，适应一下西安时差（其实没有），让爸妈好好休息。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 2 -->
+    <div class="day-block">
+      <div class="day-badge badge-city">
+        <div class="day-num">Day2</div>
+        <div class="day-label">城区</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-title">城墙 · 钟楼 · 回民街</div>
+            <div class="day-subtitle">轻松进入西安状态，不赶景点</div>
+          </div>
+          <div class="day-tag tag-light">轻松日</div>
+        </div>
+        <div class="day-body">
+          <div class="segments">
+            <div class="segment">
+              <div class="seg-time">上午</div>
+              <div class="seg-content">
+                <div class="seg-title">睡到自然醒</div>
+                <div class="seg-desc">不设早起闹钟。到酒店附近吃一顿西安早餐，感受一下当地气氛。</div>
+              </div>
+            </div>
+            <div class="segment">
+              <div class="seg-time">中午后</div>
+              <div class="seg-content">
+                <div class="seg-title">永宁门 / 西安城墙</div>
+                <div class="seg-desc">只走一小段，感受城墙气势。<strong>不要骑车绕城墙</strong>——14公里全程对爸妈太累，走走拍照即可。</div>
+                <div class="highlights">
+                  <span class="hl hl-terra">门票 ¥54/人</span>
+                  <span class="hl hl-gold">步行 30 分钟足够</span>
+                </div>
+              </div>
+            </div>
+            <div class="segment">
+              <div class="seg-time">下午</div>
+              <div class="seg-content">
+                <div class="seg-title">回酒店休息</div>
+                <div class="seg-desc">这点很重要。午后温度高，爸妈需要午休，保存精力给晚上。</div>
+              </div>
+            </div>
+            <div class="segment">
+              <div class="seg-time">傍晚</div>
+              <div class="seg-content">
+                <div class="seg-title">钟楼 · 鼓楼夜景</div>
+                <div class="seg-desc">傍晚凉快后出门，看钟楼、鼓楼点灯，拍照留念，非常漂亮。</div>
+              </div>
+            </div>
+            <div class="segment">
+              <div class="seg-time">晚上</div>
+              <div class="seg-content">
+                <div class="seg-title">回民街 · 浅逛尝鲜</div>
+                <div class="seg-desc">每样尝一点，不要狂吃。今天的重点是"进入西安状态"，不是打卡完所有小吃。</div>
+                <div class="seg-tips">
+                  <div class="seg-tip"><div class="tip-dot"></div>肉夹馍、凉皮各来一份尝个味道即可</div>
+                  <div class="seg-tip"><div class="tip-dot"></div>晚上 10 点前回酒店，保持精力</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 3 -->
+    <div class="day-block">
+      <div class="day-badge badge-key">
+        <div class="day-num">Day3</div>
+        <div class="day-label">重点</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-title">兵马俑 · 华清宫 · 温泉</div>
+            <div class="day-subtitle">全程包车，最重要的一天</div>
+          </div>
+          <div class="day-tag tag-core">核心日</div>
+        </div>
+        <div class="day-body">
+          <div class="alert" style="margin-top:0; margin-bottom:16px;">
+            <div class="alert-icon">🚗</div>
+            <div class="alert-body">
+              这一天<strong>千万不要让爸妈地铁/公交/景区车折腾</strong>。包车 + 讲解是正确解法，价格比折腾省多了。
+            </div>
+          </div>
+
+          <div class="segments">
+            <div class="segment">
+              <div class="seg-time">上午8点</div>
+              <div class="seg-content">
+                <div class="seg-title">包车出发 → 秦始皇帝陵博物院（兵马俑）</div>
+                <div class="seg-desc">从西安市区出发约40分钟。入场后请专职讲解（现场或预约均可），讲解费约 ¥200–300，值得花。</div>
+                <div class="highlights">
+                  <span class="hl hl-terra">门票 ¥85/人（2025年5月起统一全价）</span>
+                  <span class="hl hl-gold">讲解 ¥200–300</span>
+                  <span class="hl hl-blue">游览约 2.5 小时</span>
+                </div>
+                <div class="seg-tips">
+                  <div class="seg-tip"><div class="tip-dot"></div>2025年5月12日起不分淡旺季，统一全票 ¥85，以官方购票页为准</div>
+                  <div class="seg-tip"><div class="tip-dot"></div>提前在官网/小程序购票，现场排队买票会浪费时间</div>
+                </div>
+              </div>
+            </div>
+            <div class="segment">
+              <div class="seg-time">午餐</div>
+              <div class="seg-content">
+                <div class="seg-title">临潼当地吃午餐</div>
+                <div class="seg-desc">让司机推荐附近正经馆子，不要在景区门口吃贵且一般的旅游餐。</div>
+              </div>
+            </div>
+            <div class="segment">
+              <div class="seg-time">下午</div>
+              <div class="seg-content">
+                <div class="seg-title">华清宫</div>
+                <div class="seg-desc">唐朝皇家温泉行宫，也是西安事变旧址。有历史、有故事，适合带父母看。游览约1.5–2小时。</div>
+                <div class="highlights">
+                  <span class="hl hl-terra">门票约 ¥120/人</span>
+                  <span class="hl hl-blue">距兵马俑 10 分钟车程</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="option-box">
+            <div class="opt-title">当晚住宿 · 两种方案选一</div>
+            <div class="opt-row">
+              <div class="opt-item recommended">
+                <div class="opt-name">方案A：当天回西安市区<span class="opt-badge">推荐</span></div>
+                <div class="opt-pro">不换酒店，行李省事，次日早起方便</div>
+                <div class="opt-con">温泉体验不如住在临潼深度</div>
+              </div>
+              <div class="opt-item">
+                <div class="opt-name">方案B：临潼住华清御汤</div>
+                <div class="opt-pro">泡温泉极舒服，爸妈会很享受</div>
+                <div class="opt-con">需换酒店一次，行李多则麻烦</div>
+              </div>
+            </div>
+            <div style="font-size:12px; color:var(--muted); margin-top:10px;">
+              建议：行李少 → 住临潼；行李多或爸妈不爱泡汤 → 回市区
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 4 -->
+    <div class="day-block">
+      <div class="day-badge badge-museum">
+        <div class="day-num">Day4</div>
+        <div class="day-label">文化</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-title">陕历博 · 大雁塔 · 大唐不夜城</div>
+            <div class="day-subtitle">上午文化，傍晚夜游，中午必须休息</div>
+          </div>
+          <div class="day-tag tag-culture">文化日</div>
+        </div>
+        <div class="day-body">
+          <div class="segments">
+            <div class="segment">
+              <div class="seg-time">上午</div>
+              <div class="seg-content">
+                <div class="seg-title">陕西历史博物馆</div>
+                <div class="seg-desc">中国最顶级的地方历史博物馆之一，文物精品极多。信息量很大，<strong>一定提前预约，最好请讲解</strong>，不然爸妈走马观花没意思。</div>
+                <div class="highlights">
+                  <span class="hl hl-green">免费参观（需实名预约）</span>
+                  <span class="hl hl-gold">讲解约 ¥200–300</span>
+                  <span class="hl hl-blue">游览约 2–3 小时</span>
+                </div>
+                <div class="seg-tips">
+                  <div class="seg-tip"><div class="tip-dot"></div>通过官方微信公众号提前预约，实行提前放票制度</div>
+                  <div class="seg-tip"><div class="tip-dot"></div>2025年新馆已开放，馆藏更好看</div>
+                </div>
+              </div>
+            </div>
+            <div class="segment">
+              <div class="seg-time">中午</div>
+              <div class="seg-content">
+                <div class="seg-title">回酒店午休 · 这步不能省</div>
+                <div class="seg-desc">博物馆站着看2–3小时人会很累，中午回酒店休息，下午才有精力看夜景。</div>
+              </div>
+            </div>
+            <div class="segment">
+              <div class="seg-time">傍晚</div>
+              <div class="seg-content">
+                <div class="seg-title">大雁塔广场</div>
+                <div class="seg-desc">去看大雁塔，傍晚光线好，适合拍照。可以登塔（门票另计），也可以只在广场转转。</div>
+                <div class="highlights">
+                  <span class="hl hl-terra">广场免费 · 登塔 ¥50</span>
+                </div>
+              </div>
+            </div>
+            <div class="segment">
+              <div class="seg-time">晚上</div>
+              <div class="seg-content">
+                <div class="seg-title">大唐不夜城</div>
+                <div class="seg-desc">步行街夜景好，有各种表演和打卡点。<strong>逛 40–60 分钟就够</strong>，不要在人群里硬挤，尤其带爸妈。</div>
+                <div class="seg-tips">
+                  <div class="seg-tip"><div class="tip-dot"></div>晚上 7–8 点人最多，8:30 后相对好一点</div>
+                  <div class="seg-tip"><div class="tip-dot"></div>不一定要等到关门，拍完照就可以走</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 5 -->
+    <div class="day-block">
+      <div class="day-badge badge-easy">
+        <div class="day-num">Day5</div>
+        <div class="day-label">悠闲</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-title">小雁塔 · 茶馆 · 伴手礼</div>
+            <div class="day-subtitle">机动日，累了就少走路</div>
+          </div>
+          <div class="day-tag tag-easy">轻松收尾</div>
+        </div>
+        <div class="day-body">
+          <div class="segments">
+            <div class="segment">
+              <div class="seg-time">上午</div>
+              <div class="seg-content">
+                <div class="seg-title">小雁塔 + 西安博物院</div>
+                <div class="seg-desc">比大雁塔安静，人少，适合慢慢逛。小雁塔有唐代建筑美感，西安博物院同在一处，联票参观很方便。</div>
+                <div class="highlights">
+                  <span class="hl hl-green">免费（需预约）</span>
+                  <span class="hl hl-gold">游览约 1.5 小时</span>
+                </div>
+              </div>
+            </div>
+            <div class="segment">
+              <div class="seg-time">下午</div>
+              <div class="seg-content">
+                <div class="seg-title">喝茶 · 买伴手礼</div>
+                <div class="seg-desc">找一家有氛围的茶馆坐坐，陕西盖碗茶很有意思。顺便买伴手礼：秦腔脸谱、陕西酒、柿饼、各类小吃。</div>
+                <div class="seg-tips">
+                  <div class="seg-tip"><div class="tip-dot"></div>永兴坊是买伴手礼的好地方，集中方便</div>
+                  <div class="seg-tip"><div class="tip-dot"></div>如果前几天已经很累，这天可以只喝茶不逛景点</div>
+                </div>
+              </div>
+            </div>
+            <div class="segment">
+              <div class="seg-time">晚上</div>
+              <div class="seg-content">
+                <div class="seg-title">吃一顿舒服的陕菜正餐</div>
+                <div class="seg-desc">旅程最后一顿正餐，好好吃。推荐葫芦鸡（陕菜代表作）或酸汤水饺，不要再吃小吃摊了。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 6 -->
+    <div class="day-block">
+      <div class="day-badge badge-return">
+        <div class="day-num">Day6</div>
+        <div class="day-label">返程</div>
+      </div>
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-title">返程日</div>
+            <div class="day-subtitle">不安排景点，从容离开</div>
+          </div>
+          <div class="day-tag tag-go">启程</div>
+        </div>
+        <div class="day-body">
+          <div class="segments">
+            <div class="segment">
+              <div class="seg-time">上午</div>
+              <div class="seg-content">
+                <div class="seg-title">睡醒 · 吃早餐 · 退房</div>
+                <div class="seg-desc">不要安排上午景点。旅程最后一天要给退房和打车留足时间，轻松出发。</div>
+              </div>
+            </div>
+            <div class="segment">
+              <div class="seg-time">出发前</div>
+              <div class="seg-content">
+                <div class="seg-title">前往机场 / 西安北站</div>
+                <div class="seg-desc">钟楼/南门区域打车到西安北站约 30 分钟，去机场约 40 分钟，提前安排好行程。</div>
+                <div class="seg-tips">
+                  <div class="seg-tip"><div class="tip-dot"></div>行李多的话，提前一天确认退房流程和行李寄存</div>
+                  <div class="seg-tip"><div class="tip-dot"></div>到机场/高铁站后还有时间，可以逛机场买伴手礼</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end timeline -->
+
+  <!-- HOTELS -->
+  <div class="section-title">
+    <div class="icon">🏨</div>
+    <div>
+      <h2>酒店推荐</h2>
+      <p>带爸妈首选稳定服务，不追潮流</p>
+    </div>
+  </div>
+
+  <div class="hotel-tier tier1">
+    <div class="tier-label">
+      <div class="tier-num">1</div>
+      <div>
+        <div class="tier-name">最适合带爸妈</div>
+        <div class="tier-sub">服务稳定，长辈会喜欢</div>
+      </div>
+    </div>
+    <div class="hotel-cards">
+      <div class="hotel-card top">
+        <div class="hotel-name">西安索菲特人民大厦</div>
+        <div class="hotel-pros">
+          <div class="hp">老牌五星，服务质量稳定</div>
+          <div class="hp">安静，长辈感觉舒适放心</div>
+          <div class="hp">位置好，靠近市中心</div>
+        </div>
+        <div class="hotel-cons">
+          <div class="hc">装修风格偏传统，不算最潮</div>
+        </div>
+      </div>
+      <div class="hotel-card top">
+        <div class="hotel-name">西安富力希尔顿</div>
+        <div class="hotel-pros">
+          <div class="hp">国际品牌，品质有保障</div>
+          <div class="hp">房间宽敞，服务规范</div>
+          <div class="hp">适合带父母住</div>
+        </div>
+        <div class="hotel-cons">
+          <div class="hc">不是最新潮那种网红酒店</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hotel-tier tier2">
+    <div class="tier-label">
+      <div class="tier-num">2</div>
+      <div>
+        <div class="tier-name">位置方便</div>
+        <div class="tier-sub">性价比高，出行极便利</div>
+      </div>
+    </div>
+    <div class="hotel-cards">
+      <div class="hotel-card mid">
+        <div class="hotel-name">钟楼诺富特 / 钟楼附近高分酒店</div>
+        <div class="hotel-pros">
+          <div class="hp">位置绝佳，步行即到核心景点</div>
+          <div class="hp">打车吃饭极方便</div>
+        </div>
+        <div class="hotel-cons">
+          <div class="hc">周边可能喧闹，选房型要注意隔音</div>
+          <div class="hc">人流大，酒店服务可能较忙</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hotel-tier tier3">
+    <div class="tier-label">
+      <div class="tier-num">3</div>
+      <div>
+        <div class="tier-name">体验型（仅限 Day 3 临潼住）</div>
+        <div class="tier-sub">搭配温泉，不适合全程住</div>
+      </div>
+    </div>
+    <div class="hotel-cards">
+      <div class="hotel-card exp">
+        <div class="hotel-name">华清御汤酒店</div>
+        <div class="hotel-pros">
+          <div class="hp">紧邻华清宫，泡温泉极方便</div>
+          <div class="hp">爸妈会很享受，体验感强</div>
+        </div>
+        <div class="hotel-cons">
+          <div class="hc">离西安市区核心远，不适合全程住</div>
+          <div class="hc">需要换酒店一次</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOD -->
+  <div class="section-title">
+    <div class="icon">🍜</div>
+    <div>
+      <h2>吃什么</h2>
+      <p>每天只一顿小吃，其余吃正餐</p>
+    </div>
+  </div>
+
+  <div class="alert">
+    <div class="alert-icon">🍽️</div>
+    <div class="alert-body">
+      <strong>带爸妈吃法原则：</strong>每天只安排一顿小吃，其余吃正经陕菜馆。
+      不要把凉皮、泡馍、胡辣汤、烤串、甜食全塞一天——肠胃会抗议。
+    </div>
+  </div>
+
+  <div class="food-grid">
+    <div class="food-item">
+      <div class="food-emoji">🍗</div>
+      <div class="food-name">葫芦鸡</div>
+      <div class="food-tip">陕菜代表，正餐首选</div>
+    </div>
+    <div class="food-item">
+      <div class="food-emoji">🍜</div>
+      <div class="food-name">Biang Biang 面</div>
+      <div class="food-tip">宽面爽口，必吃</div>
+    </div>
+    <div class="food-item">
+      <div class="food-emoji">🫕</div>
+      <div class="food-name">牛羊肉泡馍</div>
+      <div class="food-tip">正餐吃，不要当小吃</div>
+    </div>
+    <div class="food-item">
+      <div class="food-emoji">🥟</div>
+      <div class="food-name">酸汤水饺</div>
+      <div class="food-tip">老人小孩都能吃</div>
+    </div>
+    <div class="food-item">
+      <div class="food-emoji">🫓</div>
+      <div class="food-name">肉夹馍</div>
+      <div class="food-tip">小吃尝一个即可</div>
+    </div>
+    <div class="food-item">
+      <div class="food-emoji">🥗</div>
+      <div class="food-name">凉皮</div>
+      <div class="food-tip">当小吃浅尝，别贪多</div>
+    </div>
+  </div>
+
+  <!-- TIPS -->
+  <div class="section-title">
+    <div class="icon">💡</div>
+    <div>
+      <h2>实用贴士</h2>
+      <p>带爸妈出行，这些细节要提前想清楚</p>
+    </div>
+  </div>
+
+  <div class="tips-grid">
+    <div class="tip-card">
+      <div class="tip-icon">🎟️</div>
+      <h4>景点预约</h4>
+      <p>陕西历史博物馆、小雁塔 / 西安博物院均需实名预约。提前在官方微信公众号预约，别等到当天再排队。</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">🚗</div>
+      <h4>兵马俑必须包车</h4>
+      <p>临潼那天全程包车，约 ¥400–600（含接送兵马俑+华清宫）。不要让爸妈坐旅游大巴，停靠购物点浪费时间。</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">🎙️</div>
+      <h4>请讲解值得花钱</h4>
+      <p>兵马俑和陕历博，讲解费 ¥200–300，能让爸妈看懂文物背后的故事，比自己走马观花好 10 倍。</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">👟</div>
+      <h4>穿舒适鞋，带折叠拐</h4>
+      <p>景区石板路多，爸妈可以带轻便折叠手杖。遮阳帽、防晒霜必备，5–9 月西安日照强。</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">💊</div>
+      <h4>备常用药</h4>
+      <p>带点肠胃药（小吃容易闹肚子）、创可贴、藿香正气水（夏天），以及爸妈平时服用的处方药。</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">📱</div>
+      <h4>出行 App</h4>
+      <p>高德地图导航 + 12306 购票 + 美团/大众点评订餐。滴滴或高德叫车代替出租，更方便。</p>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary-card">
+    <h3>最终推荐方案</h3>
+    <div class="summary-points">
+      <div class="sp">
+        <div class="sp-num">1</div>
+        <div class="sp-text">不要当天落地上海就赶 G360，<strong>先住上海一晚</strong>，次日从容出发</div>
+      </div>
+      <div class="sp">
+        <div class="sp-num">2</div>
+        <div class="sp-text">到西安第一整天（Day 2）安排城墙 + 回民街，<strong>不要马上去博物馆</strong>，先轻松适应</div>
+      </div>
+      <div class="sp">
+        <div class="sp-num">3</div>
+        <div class="sp-text">兵马俑那天<strong>全程包车 + 请讲解</strong>，是否住华清御汤看爸妈喜不喜欢泡温泉</div>
+      </div>
+      <div class="sp">
+        <div class="sp-num">4</div>
+        <div class="sp-text"><strong>不去华山</strong>——爬山对父母体力要求太高，劝退</div>
+      </div>
+      <div class="sp">
+        <div class="sp-num">5</div>
+        <div class="sp-text"><strong>每天中午回酒店休息</strong>，保证爸妈体力到傍晚</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end container -->
 
-<div id="ui">
-  <div id="score-display">❤️ 0</div>
-  <div id="lives-display">💛💛💛</div>
-  <div id="level-display">Lv.1</div>
-</div>
-
-<canvas id="game-canvas"></canvas>
-
-<div id="controls">
-  <div></div>
-  <div class="ctrl-btn" id="btn-up" ontouchstart="setDir(0,-1)" onmousedown="setDir(0,-1)">▲</div>
-  <div></div>
-  <div class="ctrl-btn" id="btn-left" ontouchstart="setDir(-1,0)" onmousedown="setDir(-1,0)">◀</div>
-  <div></div>
-  <div class="ctrl-btn" id="btn-right" ontouchstart="setDir(1,0)" onmousedown="setDir(1,0)">▶</div>
-  <div></div>
-  <div class="ctrl-btn" id="btn-down" ontouchstart="setDir(0,1)" onmousedown="setDir(0,1)">▼</div>
-  <div></div>
-</div>
-
-<canvas id="offscreen" style="display:none"></canvas>
-
-<script>
-const CELL = 20;
-const COLS = 17;
-const ROWS = 17;
-const W = COLS * CELL;
-const H = ROWS * CELL;
-
-const canvas = document.getElementById('game-canvas');
-const ctx = canvas.getContext('2d');
-canvas.width = W;
-canvas.height = H;
-
-// Scale canvas for device pixel ratio
-const dpr = window.devicePixelRatio || 1;
-canvas.style.width = Math.min(W, window.innerWidth - 20) + 'px';
-canvas.style.height = Math.min(H, window.innerWidth - 20) + 'px';
-
-// Maze: 0=path, 1=wall, 2=dot, 3=power(ring), 4=empty
-const MAZE_TEMPLATE = [
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,2,2,2,2,2,1,2,2,2,1,2,2,2,2,2,1],
-  [1,3,1,1,2,1,1,2,1,2,1,1,2,1,1,3,1],
-  [1,2,1,0,2,2,2,2,2,2,2,2,2,0,1,2,1],
-  [1,2,1,0,2,1,1,2,1,2,1,1,2,0,1,2,1],
-  [1,2,2,2,2,2,0,2,0,2,0,2,2,2,2,2,1],
-  [1,2,1,1,2,1,1,0,1,0,1,1,2,1,1,2,1],
-  [1,2,2,2,2,1,0,0,4,0,0,1,2,2,2,2,1],
-  [1,2,1,1,2,1,0,4,4,4,0,1,2,1,1,2,1],
-  [1,2,2,2,2,1,0,0,0,0,0,1,2,2,2,2,1],
-  [1,2,1,1,2,1,1,0,1,0,1,1,2,1,1,2,1],
-  [1,2,2,2,2,2,0,2,0,2,0,2,2,2,2,2,1],
-  [1,2,1,0,2,1,1,2,1,2,1,1,2,0,1,2,1],
-  [1,3,1,0,2,2,2,2,2,2,2,2,2,0,1,3,1],
-  [1,2,1,1,2,1,1,2,1,2,1,1,2,1,1,2,1],
-  [1,2,2,2,2,2,1,2,2,2,1,2,2,2,2,2,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-];
-
-let maze, dots, score, lives, level, gameState;
-let player, chaser, chasers;
-let animFrame;
-let inputDir = {x:1, y:0};
-let nextDir = {x:1, y:0};
-let powerTimer = 0;
-let frightTimer = 0;
-let levelTimer = 0;
-
-function resetMaze() {
-  maze = MAZE_TEMPLATE.map(r => [...r]);
-  dots = 0;
-  for(let r=0; r<ROWS; r++)
-    for(let c=0; c<COLS; c++)
-      if(maze[r][c] === 2 || maze[r][c] === 3) dots++;
-}
-
-function initGame() {
-  score = 0; lives = 3; level = 1;
-  gameState = 'playing';
-  resetMaze();
-  spawnPlayer();
-  spawnChasers();
-  updateUI();
-}
-
-function spawnPlayer() {
-  player = {
-    x: 8 * CELL + CELL/2,
-    y: 12 * CELL + CELL/2,
-    dx: 0, dy: 0,
-    nextDx: 1, nextDy: 0,
-    speed: 2,
-    mouthAngle: 0, mouthDir: 1,
-    frame: 0
-  };
-  inputDir = {x:1, y:0};
-  nextDir = {x:1, y:0};
-}
-
-function spawnChasers() {
-  const speed = 1.4 + (level-1) * 0.15;
-  chasers = [
-    { x: 8*CELL+CELL/2, y: 8*CELL+CELL/2, dx:1, dy:0, speed, frightened:false, eaten:false, respawnTimer:0, color:'#ff69b4' },
-    { x: 8*CELL+CELL/2, y: 8*CELL+CELL/2, dx:-1, dy:0, speed:speed*0.85, frightened:false, eaten:false, respawnTimer:0, color:'#ff9999' },
-  ];
-}
-
-function canMove(x, y, dx, dy) {
-  const nx = x + dx * player.speed;
-  const ny = y + dy * player.speed;
-  const margin = 4;
-  const col1 = Math.floor((nx - CELL/2 + margin) / CELL);
-  const col2 = Math.floor((nx + CELL/2 - margin) / CELL);
-  const row1 = Math.floor((ny - CELL/2 + margin) / CELL);
-  const row2 = Math.floor((ny + CELL/2 - margin) / CELL);
-  if(col1 < 0 || col2 >= COLS || row1 < 0 || row2 >= ROWS) return false;
-  return maze[row1][col1] !== 1 && maze[row1][col2] !== 1 &&
-         maze[row2][col1] !== 1 && maze[row2][col2] !== 1;
-}
-
-function canMoveAt(x, y, dx, dy, speed) {
-  const nx = x + dx * speed;
-  const ny = y + dy * speed;
-  const margin = 5;
-  const col1 = Math.floor((nx - CELL/2 + margin) / CELL);
-  const col2 = Math.floor((nx + CELL/2 - margin) / CELL);
-  const row1 = Math.floor((ny - CELL/2 + margin) / CELL);
-  const row2 = Math.floor((ny + CELL/2 - margin) / CELL);
-  if(col1 < 0 || col2 >= COLS || row1 < 0 || row2 >= ROWS) return false;
-  return maze[row1][col1] !== 1 && maze[row1][col2] !== 1 &&
-         maze[row2][col1] !== 1 && maze[row2][col2] !== 1;
-}
-
-function isAligned(val) {
-  return Math.abs(val % CELL - CELL/2) < 3;
-}
-
-function updatePlayer() {
-  // Try to apply next direction at grid alignment
-  if (isAligned(player.x) && isAligned(player.y)) {
-    if (canMove(player.x, player.y, nextDir.x, nextDir.y)) {
-      player.dx = nextDir.x;
-      player.dy = nextDir.y;
-    }
-  }
-  if (canMove(player.x, player.y, player.dx, player.dy)) {
-    player.x += player.dx * player.speed;
-    player.y += player.dy * player.speed;
-  }
-
-  // Wrap around
-  if (player.x < 0) player.x = W;
-  if (player.x > W) player.x = 0;
-
-  // Eat dots
-  const col = Math.floor(player.x / CELL);
-  const row = Math.floor(player.y / CELL);
-  if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
-    const cell = maze[row][col];
-    if (cell === 2) {
-      maze[row][col] = 0;
-      score += 10;
-      dots--;
-      playBeep(440, 30);
-    } else if (cell === 3) {
-      maze[row][col] = 0;
-      score += 50;
-      dots--;
-      frightTimer = 300;
-      chasers.forEach(c => { c.frightened = true; c.eaten = false; });
-      playBeep(220, 200);
-      showMessage('💍 反击！');
-    }
-  }
-
-  // Mouth animation
-  player.mouthAngle += 0.15 * player.mouthDir;
-  if (player.mouthAngle > 0.35) player.mouthDir = -1;
-  if (player.mouthAngle < 0.02) player.mouthDir = 1;
-  player.frame++;
-}
-
-function updateChasers() {
-  if (frightTimer > 0) {
-    frightTimer--;
-    if (frightTimer === 0) chasers.forEach(c => { c.frightened = false; c.eaten = false; });
-  }
-
-  for (const ch of chasers) {
-    if (ch.respawnTimer > 0) {
-      ch.respawnTimer--;
-      if (ch.respawnTimer === 0) {
-        ch.x = 8*CELL+CELL/2;
-        ch.y = 8*CELL+CELL/2;
-        ch.frightened = false;
-        ch.eaten = false;
-        ch.dx = 1; ch.dy = 0;
-      }
-      continue;
-    }
-
-    // At grid alignment, choose direction
-    if (isAligned(ch.x) && isAligned(ch.y)) {
-      const col = Math.round((ch.x - CELL/2) / CELL);
-      const row = Math.round((ch.y - CELL/2) / CELL);
-      const dirs = [{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}];
-      const valid = dirs.filter(d =>
-        d.x !== -ch.dx || d.y !== -ch.dy // can't reverse
-      ).filter(d => {
-        const nc = col + d.x, nr = row + d.y;
-        return nc>=0 && nc<COLS && nr>=0 && nr<ROWS && maze[nr][nc] !== 1;
-      });
-
-      if (valid.length > 0) {
-        let chosen;
-        if (ch.frightened) {
-          chosen = valid[Math.floor(Math.random() * valid.length)];
-        } else {
-          // Chase player
-          const tx = player.x, ty = player.y;
-          chosen = valid.reduce((best, d) => {
-            const nx = (col+d.x)*CELL+CELL/2, ny = (row+d.y)*CELL+CELL/2;
-            const dist = (nx-tx)**2 + (ny-ty)**2;
-            const bd = ((col+best.x)*CELL+CELL/2-tx)**2 + ((row+best.y)*CELL+CELL/2-ty)**2;
-            return dist < bd ? d : best;
-          });
-        }
-        ch.dx = chosen.x;
-        ch.dy = chosen.y;
-      }
-    }
-
-    const spd = ch.frightened ? ch.speed * 0.6 : ch.speed;
-    if (canMoveAt(ch.x, ch.y, ch.dx, ch.dy, spd)) {
-      ch.x += ch.dx * spd;
-      ch.y += ch.dy * spd;
-    }
-
-    // Wrap
-    if (ch.x < 0) ch.x = W;
-    if (ch.x > W) ch.x = 0;
-
-    // Collision with player
-    const dist = Math.hypot(ch.x - player.x, ch.y - player.y);
-    if (dist < CELL * 0.75) {
-      if (ch.frightened && !ch.eaten) {
-        ch.eaten = true;
-        ch.frightened = false;
-        ch.respawnTimer = 120;
-        score += 200;
-        showMessage('🎉 +200');
-        playBeep(880, 100);
-      } else if (!ch.eaten) {
-        loseLife();
-      }
-    }
-  }
-}
-
-function loseLife() {
-  lives--;
-  updateUI();
-  playBeep(100, 500);
-  if (lives <= 0) {
-    gameState = 'gameover';
-    showOverlay('gameover');
-  } else {
-    showMessage('💔 加油！');
-    setTimeout(() => {
-      spawnPlayer();
-      chasers.forEach(c => {
-        c.x = 8*CELL+CELL/2;
-        c.y = 8*CELL+CELL/2;
-        c.frightened = false;
-        c.eaten = false;
-        c.respawnTimer = 60;
-      });
-    }, 1000);
-  }
-}
-
-function updateUI() {
-  document.getElementById('score-display').textContent = '❤️ ' + score;
-  document.getElementById('lives-display').textContent = '💛'.repeat(lives);
-  document.getElementById('level-display').textContent = 'Lv.' + level;
-}
-
-// ===== DRAWING =====
-
-function drawMaze() {
-  ctx.fillStyle = '#1a0a2e';
-  ctx.fillRect(0, 0, W, H);
-
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      const x = c * CELL, y = r * CELL;
-      const cell = maze[r][c];
-
-      if (cell === 1) {
-        // Wall with gradient glow
-        ctx.fillStyle = '#2d1b69';
-        ctx.fillRect(x, y, CELL, CELL);
-        ctx.strokeStyle = '#6b35c9';
-        ctx.lineWidth = 0.5;
-        ctx.strokeRect(x+1, y+1, CELL-2, CELL-2);
-      } else if (cell === 2) {
-        // Heart dot
-        drawHeart(ctx, x + CELL/2, y + CELL/2, 3, '#ff69b4');
-      } else if (cell === 3) {
-        // Ring power-up
-        const t = Date.now() / 300;
-        const pulse = 1 + 0.2 * Math.sin(t);
-        ctx.save();
-        ctx.translate(x + CELL/2, y + CELL/2);
-        ctx.scale(pulse, pulse);
-        ctx.strokeStyle = '#ffd700';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(0, 0, 5, 0, Math.PI*2);
-        ctx.stroke();
-        ctx.fillStyle = '#fff9';
-        ctx.fill();
-        ctx.restore();
-      }
-    }
-  }
-}
-
-function drawHeart(ctx, x, y, size, color) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.moveTo(0, size*0.3);
-  ctx.bezierCurveTo(-size*0.6, -size*0.3, -size, size*0.1, 0, size);
-  ctx.bezierCurveTo(size, size*0.1, size*0.6, -size*0.3, 0, size*0.3);
-  ctx.fill();
-  ctx.restore();
-}
-
-function drawPlayer() {
-  const x = player.x, y = player.y;
-  const r = CELL/2 - 1;
-  ctx.save();
-  ctx.translate(x, y);
-
-  // Rotate based on direction
-  if (player.dx === 1) ctx.rotate(0);
-  else if (player.dx === -1) ctx.rotate(Math.PI);
-  else if (player.dy === 1) ctx.rotate(Math.PI/2);
-  else if (player.dy === -1) ctx.rotate(-Math.PI/2);
-
-  // Body (face)
-  ctx.fillStyle = '#ffe0b2';
-  ctx.beginPath();
-  ctx.arc(0, 0, r, player.mouthAngle * Math.PI, (2 - player.mouthAngle) * Math.PI);
-  ctx.lineTo(0, 0);
-  ctx.fill();
-
-  ctx.restore();
-
-  // Draw cartoon face on top
-  ctx.save();
-  ctx.translate(x, y);
-
-  // Spiky hair (guy)
-  ctx.fillStyle = '#1a1a1a';
-  for (let i = -2; i <= 2; i++) {
-    ctx.beginPath();
-    ctx.moveTo(i*3.5 - 2, -r+2);
-    ctx.lineTo(i*3.5, -r-5 + Math.abs(i)*1.5);
-    ctx.lineTo(i*3.5 + 2, -r+2);
-    ctx.fill();
-  }
-
-  // Glasses (orange tint)
-  ctx.strokeStyle = '#333';
-  ctx.lineWidth = 1;
-  ctx.fillStyle = 'rgba(255,160,50,0.3)';
-  ctx.beginPath();
-  ctx.arc(-3.5, 0, 3.5, 0, Math.PI*2);
-  ctx.fill(); ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(3.5, 0, 3.5, 0, Math.PI*2);
-  ctx.fill(); ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(-7, 0); ctx.lineTo(-8, -1);
-  ctx.moveTo(7, 0); ctx.lineTo(8, -1);
-  ctx.moveTo(0, 0); ctx.lineTo(0, -0.5);
-  ctx.stroke();
-
-  ctx.restore();
-}
-
-function drawChaser(ch) {
-  if (ch.respawnTimer > 0) return;
-  const x = ch.x, y = ch.y;
-  const r = CELL/2 - 1;
-  ctx.save();
-  ctx.translate(x, y);
-
-  if (ch.frightened) {
-    // Frightened - blue/shaking
-    const shake = Math.sin(Date.now()/50) * 1;
-    ctx.translate(shake, 0);
-    // Body
-    ctx.fillStyle = '#4444ff';
-    ctx.beginPath();
-    ctx.arc(0, -2, r, Math.PI, 0);
-    ctx.lineTo(r, r-2);
-    for (let i = 3; i >= 0; i--) {
-      ctx.lineTo(r - i*(r*2/3) - r/3, r-4 + (i%2)*4);
-    }
-    ctx.lineTo(-r, r-2);
-    ctx.fill();
-    // Scared face
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(-5, -2, 4, 3);
-    ctx.fillRect(1, -2, 4, 3);
-    // Wavy mouth
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(-5, 4);
-    for (let i = 0; i <= 4; i++) {
-      ctx.lineTo(-5 + i*2.5, 4 + (i%2)*2);
-    }
-    ctx.stroke();
-  } else {
-    // Normal - girl character
-    // Body/ghost shape
-    ctx.fillStyle = ch.color;
-    ctx.beginPath();
-    ctx.arc(0, -2, r, Math.PI, 0);
-    ctx.lineTo(r, r-2);
-    for (let i = 3; i >= 0; i--) {
-      ctx.lineTo(r - i*(r*2/3) - r/3, r-4 + (i%2)*3);
-    }
-    ctx.lineTo(-r, r-2);
-    ctx.fill();
-
-    // Face skin tone
-    ctx.fillStyle = '#ffe0c8';
-    ctx.beginPath();
-    ctx.arc(0, -3, r*0.7, 0, Math.PI*2);
-    ctx.fill();
-
-    // US Open cap
-    ctx.fillStyle = '#f5f5f5';
-    ctx.beginPath();
-    ctx.arc(0, -r*0.3, r*0.75, Math.PI*1.1, Math.PI*0.1, false);
-    ctx.fill();
-    // Cap brim
-    ctx.fillStyle = '#e8e8e8';
-    ctx.beginPath();
-    ctx.ellipse(0, -r*0.3 + 1, r*0.85, 3, 0, Math.PI*0.9, Math.PI*0.1, true);
-    ctx.fill();
-    // Cap text (tiny)
-    ctx.fillStyle = '#333';
-    ctx.font = 'bold 3px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('US', -2.5, -r*0.35);
-    ctx.font = '2.5px Arial';
-    ctx.fillText('OPEN', 0, -r*0.1);
-
-    // Thin glasses
-    ctx.strokeStyle = '#aaa';
-    ctx.lineWidth = 0.8;
-    ctx.beginPath();
-    ctx.arc(-3, -2, 2.8, 0, Math.PI*2); ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(3, -2, 2.8, 0, Math.PI*2); ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(-6.5, -2); ctx.lineTo(-7, -1.5);
-    ctx.moveTo(6.5, -2); ctx.lineTo(7, -1.5);
-    ctx.moveTo(-0.2, -2); ctx.lineTo(0.2, -2);
-    ctx.stroke();
-
-    // Smile
-    ctx.strokeStyle = '#c26060';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.arc(0, 0, 3, 0.2, Math.PI*0.8);
-    ctx.stroke();
-
-    // Peace sign hand (tiny)
-    if (Math.floor(Date.now()/500) % 2 === 0) {
-      ctx.fillStyle = '#ffe0c8';
-      ctx.font = '8px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('✌️', r+2, 2);
-    }
-  }
-
-  ctx.restore();
-}
-
-function drawPowerOverlay() {
-  if (frightTimer > 0 && frightTimer < 80) {
-    // Flash warning
-    if (Math.floor(Date.now()/150) % 2 === 0) {
-      ctx.fillStyle = 'rgba(255,255,0,0.05)';
-      ctx.fillRect(0, 0, W, H);
-    }
-  }
-}
-
-function gameLoop() {
-  if (gameState !== 'playing') return;
-
-  updatePlayer();
-  updateChasers();
-
-  drawMaze();
-  drawPlayer();
-  chasers.forEach(drawChaser);
-  drawPowerOverlay();
-  updateUI();
-
-  // Level complete
-  if (dots <= 0) {
-    level++;
-    resetMaze();
-    spawnPlayer();
-    spawnChasers();
-    showMessage('🎊 Level ' + level + '!');
-    playBeep(660, 300);
-    updateUI();
-  }
-
-  animFrame = requestAnimationFrame(gameLoop);
-}
-
-// ===== CONTROLS =====
-function setDir(dx, dy) {
-  nextDir = {x: dx, y: dy};
-  player.nextDx = dx;
-  player.nextDy = dy;
-}
-
-// Keyboard
-document.addEventListener('keydown', e => {
-  if (gameState !== 'playing') return;
-  const map = {
-    ArrowLeft: [-1,0], ArrowRight: [1,0],
-    ArrowUp: [0,-1], ArrowDown: [0,1],
-    a: [-1,0], d: [1,0], w: [0,-1], s: [0,1]
-  };
-  const d = map[e.key];
-  if (d) { setDir(d[0], d[1]); e.preventDefault(); }
-});
-
-// Touch swipe
-let touchStartX = 0, touchStartY = 0;
-canvas.addEventListener('touchstart', e => {
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
-  e.preventDefault();
-}, {passive: false});
-
-canvas.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  const dy = e.changedTouches[0].clientY - touchStartY;
-  if (Math.abs(dx) > Math.abs(dy)) {
-    setDir(dx > 0 ? 1 : -1, 0);
-  } else {
-    setDir(0, dy > 0 ? 1 : -1);
-  }
-  e.preventDefault();
-}, {passive: false});
-
-// ===== AUDIO =====
-let audioCtx;
-function playBeep(freq, dur) {
-  try {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.frequency.value = freq;
-    osc.type = 'sine';
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur/1000);
-    osc.start(); osc.stop(audioCtx.currentTime + dur/1000);
-  } catch(e) {}
-}
-
-// ===== MESSAGES =====
-let msgTimeout;
-function showMessage(text) {
-  const el = document.getElementById('message');
-  el.textContent = text;
-  el.style.opacity = '1';
-  clearTimeout(msgTimeout);
-  msgTimeout = setTimeout(() => { el.style.opacity = '0'; }, 1500);
-}
-
-// ===== OVERLAY =====
-function showOverlay(type) {
-  cancelAnimationFrame(animFrame);
-  const ov = document.getElementById('overlay');
-  ov.style.display = 'flex';
-  ov.innerHTML = type === 'gameover' ? `
-    <div class="big">💔</div>
-    <h1>游戏结束！</h1>
-    <p>被追上了～</p>
-    <p style="font-size:24px;color:#ffd700;margin:10px 0">得分: ${score}</p>
-    <button class="start-btn" id="start-btn" style="margin-top:16px;padding:12px 32px;background:linear-gradient(135deg,#ff69b4,#ff1493);border:none;border-radius:25px;color:#fff;font-size:18px;font-weight:bold;cursor:pointer;" onclick="startGame()">再来一次</button>
-  ` : `
-    <div class="big">💕</div>
-    <h1>爱心追逐</h1>
-    <p>男生要逃离女朋友的追赶！</p>
-    <p>🍒 收集爱心得分</p>
-    <p>💍 吃戒指可以反击！</p>
-    <p>👆 滑动或使用方向键控制</p>
-    <button id="start-btn" onclick="startGame()">开始游戏</button>
-  `;
-}
-
-function startGame() {
-  document.getElementById('overlay').style.display = 'none';
-  if (audioCtx) audioCtx.resume();
-  initGame();
-  animFrame = requestAnimationFrame(gameLoop);
-}
-
-// Initial draw
-drawMaze();
-</script>
 </body>
 </html>
